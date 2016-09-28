@@ -5,10 +5,10 @@ import (
 	"net"
 	"strings"
 
-	"github.com/miekg/dns"
-	"github.com/miekg/dns/dnsutil"
 	"github.com/StackExchange/dnscontrol/models"
 	"github.com/StackExchange/dnscontrol/transform"
+	"github.com/miekg/dns"
+	"github.com/miekg/dns/dnsutil"
 )
 
 // Returns false if label does not validate.
@@ -142,6 +142,7 @@ func import_transform(src_domain, dst_domain *models.DomainConfig, transforms []
 		newrec = *rec
 		newrec.Name = newrec.NameFQDN
 		newrec.NameFQDN = dnsutil.AddOrigin(newrec.Name, dst_domain.Name)
+		newrec.TTL = 60 // Transforms are automatically ttl=60 for now.
 		switch rec.Type {
 		case "A":
 			tr, err := transform.TransformIP(net.ParseIP(newrec.Target), transforms)
