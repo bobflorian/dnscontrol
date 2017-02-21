@@ -10,6 +10,7 @@ import (
 	gandiversion "github.com/prasmussen/gandi-api/domain/zone/version"
 
 	"github.com/StackExchange/dnscontrol/models"
+	"github.com/miekg/dns/dnsutil"
 )
 
 // fetchDomainList gets list of domains for account. Cache ids for easy lookup.
@@ -39,7 +40,7 @@ func (c *GandiApi) fetchDomainInfo(fqdn string) (*gandidomain.DomainInfo, error)
 }
 
 // getRecordsForDomain returns a list of records for a zone.
-func (c *GandiApi) getZoneRecords(zoneid int64) ([]*models.RecordConfig, error) {
+func (c *GandiApi) getZoneRecords(zoneid int64, domain string) ([]*models.RecordConfig, error) {
 	gc := gandiclient.New(c.ApiKey, gandiclient.Production)
 	record := gandirecord.New(gc)
 	recs, err := record.List(zoneid, 0)
@@ -48,7 +49,7 @@ func (c *GandiApi) getZoneRecords(zoneid int64) ([]*models.RecordConfig, error) 
 	}
 	rcs := make([]*models.RecordConfig, 0, len(recs))
 	for _, r := range recs {
-		rcs = append(rcs, convert(r))
+		rcs = append(rcs, convert(r, domain))
 	}
 	return rcs, nil
 }
@@ -171,9 +172,9 @@ func (c *GandiApi) createGandiZone(domainname string, zone_id int64, records []g
 	return nil
 }
 
-func convert(r *gandirecord.RecordInfo) *models.RecordConfig {
+func convert(r *gandirecord.RecordInfo, domain string) *models.RecordConfig {
 	return &models.RecordConfig{
-		NameFQDN: r.Name,
+		NameFQDN: dnsutil.AddOrigin(r.Name, domain),
 		Type:     r.Type,
 		Original: r,
 		Target:   r.Value,

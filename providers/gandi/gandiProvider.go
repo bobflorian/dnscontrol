@@ -60,7 +60,7 @@ func (c *GandiApi) GetDomainCorrections(dc *models.DomainConfig) ([]*models.Corr
 	if err != nil {
 		return nil, err
 	}
-	foundRecords, err := c.getZoneRecords(domaininfo.ZoneId)
+	foundRecords, err := c.getZoneRecords(domaininfo.ZoneId, dc.Name)
 	if err != nil {
 		return nil, err
 	}
