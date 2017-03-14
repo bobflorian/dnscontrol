@@ -27,6 +27,7 @@ import (
 	_ "github.com/StackExchange/dnscontrol/providers/google"
 	_ "github.com/StackExchange/dnscontrol/providers/namecheap"
 	_ "github.com/StackExchange/dnscontrol/providers/namedotcom"
+	_ "github.com/StackExchange/dnscontrol/providers/ns1"
 	_ "github.com/StackExchange/dnscontrol/providers/route53"
 )
 

@@ -12,6 +12,7 @@ type Correlation struct {
 	Existing *models.RecordConfig
 	Desired  *models.RecordConfig
 }
+
 type Changeset []Correlation
 
 type Differ interface {
@@ -36,7 +37,6 @@ func (d *differ) content(r *models.RecordConfig) string {
 	if r.Type == "MX" {
 		content += fmt.Sprintf(" priority=%d", r.Priority)
 	}
-
 	for _, f := range d.extraValues {
 		for k, v := range f(r) {
 			content += fmt.Sprintf(" %s=%s", k, v)

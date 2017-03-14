@@ -9,6 +9,7 @@ import (
 	"net"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/StackExchange/dnscontrol/transform"
 	"github.com/miekg/dns"
@@ -129,6 +130,38 @@ func (r *RecordConfig) RR() dns.RR {
 	return rc
 }
 
+// Key gets the RecordKey for a record, suitable for grouping on type/name.
+func (r *RecordConfig) Key() RecordKey {
+	return RecordKey{Type: r.Type, Name: r.Name}
+}
+
+// InlineMXPriority will add the mx priority to the front of the record content.
+// Use this for providers that require the priority and target in a single field.
+func (r *RecordConfig) InlineMXPriority() {
+	if r.Type == "MX" && r.Priority != 0 && !strings.Contains(r.Target, " ") {
+		r.Target = fmt.Sprintf("%d %s", r.Priority, r.Target)
+		r.Priority = 0
+	}
+}
+
+// Records is a list of dns records
+type Records []*RecordConfig
+
+// RecordKey is used to group records by type and name
+type RecordKey struct {
+	Type string
+	Name string
+}
+
+func (r Records) Grouped() map[RecordKey]Records {
+	m := map[RecordKey]Records{}
+	for _, rec := range r {
+		k := rec.Key()
+		m[k] = append(m[k], rec)
+	}
+	return m
+}
+
 type Nameserver struct {
 	Name   string `json:"name"` // Normalized to a FQDN with NO trailing "."
 	Target string `json:"target"`
@@ -147,7 +180,7 @@ type DomainConfig struct {
 	Registrar    string            `json:"registrar"`
 	DNSProviders map[string]int    `json:"dnsProviders"`
 	Metadata     map[string]string `json:"meta,omitempty"`
-	Records      []*RecordConfig   `json:"records"`
+	Records      Records           `json:"records"`
 	Nameservers  []*Nameserver     `json:"nameservers,omitempty"`
 	KeepUnknown  bool              `json:"keepunknown"`
 }
